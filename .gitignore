@@ -1,0 +1,10 @@
+# node modules
+node_modules
+dist
+dist-ssr
+*.local
+
+# environment
+.env.local
+.env
+
