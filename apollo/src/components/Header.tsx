@@ -56,7 +56,7 @@ export function Header() {
           </Button>
         </div>
 
-        {/* Search Bar - More balanced spacing */}
+        {/* Search Bar */}
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="w-full max-w-sm md:max-w-md">
             <div className="relative">
@@ -70,7 +70,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* Action Buttons - More evenly spaced */}
+        {/* Action Buttons */}
         <div className="flex items-center gap-4">
           <ModeToggle />
 
