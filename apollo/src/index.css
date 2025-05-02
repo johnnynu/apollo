@@ -1,71 +1,76 @@
-/* Import Tailwind using v4 syntax */
 @import "tailwindcss";
 
 /* Root variables - Light mode with off-white */
-:root {
-  /* Changed background to off-white (slight beige tint) */
-  --background: 60 15% 97%; /* HSL value for slight off-white */
-  --foreground: 222.2 84% 4.9%;
+@layer base {
+  :root {
+    /* Changed background to off-white (slight beige tint) */
+    --background: 60 15% 97%; /* HSL value for slight off-white */
+    --foreground: 222.2 84% 4.9%;
 
-  /* Card background to match */
-  --card: 60 30% 98%;
-  --card-foreground: 222.2 84% 4.9%;
+    /* Card background to match */
+    --card: 60 30% 98%;
+    --card-foreground: 222.2 84% 4.9%;
 
-  /* Popover background to match */
-  --popover: 60 30% 98%;
-  --popover-foreground: 222.2 84% 4.9%;
+    /* Popover background to match */
+    --popover: 60 30% 98%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-  /* Slightly tinted muted background */
-  --muted: 60 30% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+    /* Slightly tinted muted background */
+    --muted: 60 30% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-  /* Other colors remain the same */
-  --primary: 262 83.3% 57.8%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+    /* Other colors remain the same */
+    --primary: 262 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    
+    /* Adjust accent for better hover effect visibility */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 92%;  /* Slightly darker for better contrast on hover */
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-  /* Slightly tinted border */
-  --border: 60 30% 91.4%;
-  --input: 60 30% 91.4%;
-  --ring: 262 83.3% 57.8%;
-  --radius: 0.5rem;
-}
+    /* Slightly tinted border */
+    --border: 60 30% 91.4%;
+    --input: 60 30% 91.4%;
+    --ring: 262 83.3% 57.8%;
+    --radius: 0.5rem;
+  }
 
-.dark {
-  --background: 0 0% 7%;
-  --foreground: 210 40% 98%;
-  --card: 0 0% 9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 0 0% 9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 262 83.3% 57.8%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 0 0% 12%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 0 0% 15%;
-  --muted-foreground: 215 20.2% 75%;
-  --accent: 0 0% 12%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
-  --ring: 262 83.3% 57.8%;
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 210 40% 98%;
+    --card: 0 0% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 215 20.2% 75%;
+    --accent: 0 0% 15%;  /* Darker background for accent in dark mode */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 262 83.3% 57.8%;
+  }
 }
 
 /* Default styling */
-* {
-  border-color: hsl(var(--border));
-}
-
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+@layer base {
+  * {
+    border-color: hsl(var(--border) / 1)
+  }
+  body {
+    background-color: hsl(var(--background) / 1);
+    color: hsl(var(--foreground) / 1);
+  }
 }
 
 .text-shadow {
