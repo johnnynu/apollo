@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
@@ -93,14 +93,14 @@ export function PostFeed() {
                     />
                     <AvatarFallback>P</AvatarFallback>
                   </Avatar>
-                  <Link to="#" className="text-xs font-medium hover:underline">
+                  <Link to="/" className="text-xs font-medium hover:underline">
                     r/programming
                   </Link>
                   <span className="text-xs text-muted-foreground">
                     Posted by u/devguru 5 hours ago
                   </span>
                 </div>
-                <Link to="#" className="font-semibold hover:underline">
+                <Link to="/" className="font-semibold hover:underline">
                   Introducing our new open-source framework for building modern
                   web applications
                 </Link>
@@ -176,14 +176,14 @@ export function PostFeed() {
                     />
                     <AvatarFallback>A</AvatarFallback>
                   </Avatar>
-                  <Link to="#" className="text-xs font-medium hover:underline">
+                  <Link to="/" className="text-xs font-medium hover:underline">
                     r/askreddit
                   </Link>
                   <span className="text-xs text-muted-foreground">
                     Posted by u/curious_mind 8 hours ago
                   </span>
                 </div>
-                <Link to="#" className="font-semibold hover:underline">
+                <Link to="/" className="font-semibold hover:underline">
                   What's a skill that took you less than a month to learn but
                   has been useful your entire life?
                 </Link>
@@ -251,14 +251,14 @@ export function PostFeed() {
                     />
                     <AvatarFallback>W</AvatarFallback>
                   </Avatar>
-                  <Link to="#" className="text-xs font-medium hover:underline">
+                  <Link to="/" className="text-xs font-medium hover:underline">
                     r/webdev
                   </Link>
                   <span className="text-xs text-muted-foreground">
                     Posted by u/frontend_wizard 3 hours ago
                   </span>
                 </div>
-                <Link to="#" className="font-semibold hover:underline">
+                <Link to="/" className="font-semibold hover:underline">
                   I built an Apollo clone using Next.js and Tailwind - Here's
                   what I learned
                 </Link>
