@@ -5,7 +5,7 @@ import ProfilePage from "./pages/ProfilePage";
 import SubmitPage from "./pages/SubmitPage";
 import SubredditPage from "./pages/SubredditPage";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./components/layout";
+import Layout from "./components/Layout";
 
 function App() {
   return (

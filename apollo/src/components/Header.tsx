@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Bell, Menu, Plus, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,16 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "./mode-toggle";
 import { useEffect, useState } from "react";
+import { SignInButton, UserButton, useUser } from "@clerk/clerk-react";
+import { Authenticated, Unauthenticated } from "convex/react";
 
 export function Header() {
   const [mounted, setMounted] = useState(false);
+
+  // provides info about the user
+  const { user } = useUser();
+
+  const navigate = useNavigate();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -74,40 +81,43 @@ export function Header() {
         <div className="flex items-center gap-4">
           <ModeToggle />
 
-          <Button variant="ghost" size="icon" className="hidden md:flex">
-            <Plus className="h-5 w-5" />
-            <span className="sr-only">Create post</span>
-          </Button>
-
-          <Button variant="ghost" size="icon" className="hidden md:flex">
-            <Bell className="h-5 w-5" />
-            <span className="sr-only">Notifications</span>
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src="/placeholder.svg?height=32&width=32"
-                    alt="@user"
-                  />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Unauthenticated>
+            <SignInButton mode="modal">
+              <Button variant="ghost">Sign In</Button>
+            </SignInButton>
+          </Unauthenticated>
+          <Authenticated>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="hidden md:flex">
+                  <Plus className="h-5 w-5" />
+                  <span className="sr-only">Create</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Create..</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => console.log("Create post")}>
+                  Post
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => console.log("Create subreddit")}
+                >
+                  Community
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:flex"
+              onClick={() => user?.username && navigate(`/u/${user.username}`)}
+            >
+              <User className="h-5 w-5" />
+              <span className="sr-only">My Account</span>
+            </Button>
+            <UserButton />
+          </Authenticated>
         </div>
       </div>
     </header>
