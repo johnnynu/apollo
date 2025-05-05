@@ -1,23 +1,16 @@
 import { Link, useNavigate } from "react-router";
-import { Bell, Menu, Plus, Search, User } from "lucide-react";
+import { Menu, Plus, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "./mode-toggle";
 import { useEffect, useState } from "react";
 import { SignInButton, UserButton, useUser } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from "convex/react";
+import { CreateContentModal } from "./CreateContentModal";
 
 export function Header() {
   const [mounted, setMounted] = useState(false);
+  const [createModal, setCreateModal] = useState(false);
 
   // provides info about the user
   const { user } = useUser();
@@ -32,6 +25,14 @@ export function Header() {
   if (!mounted) {
     return null;
   }
+
+  const openModal = () => {
+    setCreateModal(true);
+  };
+
+  const closeModal = () => {
+    setCreateModal(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -87,26 +88,15 @@ export function Header() {
             </SignInButton>
           </Unauthenticated>
           <Authenticated>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hidden md:flex">
-                  <Plus className="h-5 w-5" />
-                  <span className="sr-only">Create</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Create..</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => console.log("Create post")}>
-                  Post
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => console.log("Create subreddit")}
-                >
-                  Community
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:flex"
+              onClick={() => openModal()}
+            >
+              <Plus className="h-5 w-5" />
+              <span className="sr-only">Create</span>
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -117,6 +107,14 @@ export function Header() {
               <span className="sr-only">My Account</span>
             </Button>
             <UserButton />
+
+            {/* Create content modal */}
+            {createModal && (
+              <CreateContentModal
+                defaultOpen={createModal}
+                onOpenChange={setCreateModal}
+              />
+            )}
           </Authenticated>
         </div>
       </div>
