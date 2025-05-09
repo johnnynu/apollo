@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,9 +28,9 @@ import {
   Plus,
   ImageIcon,
 } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 type CreateContentModalProps = {
   defaultOpen?: boolean;
@@ -52,11 +52,34 @@ export function CreateContentModal({
     title: "",
     content: "", // text posts
     imageFile: null as File | null, // for image posts
+    imagePreview: null as string | null,
     communityName: "", // for com creation
     communityDescription: "", // for com creation
   });
 
   const createSubreddit = useMutation(api.subreddit.create);
+  const createPost = useMutation(api.post.create);
+  const generateUploadUrl = useMutation(api.image.generateUploadUrl);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      updateFormData("imageFile", file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateFormData("imagePreview", reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    updateFormData("imageFile", null);
+    updateFormData("imagePreview", null);
+  };
+
+  const { subredditName } = useParams();
+  const subreddit = useQuery(api.subreddit.get, { name: subredditName || "" });
 
   const updateFormData = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -67,13 +90,34 @@ export function CreateContentModal({
     onOpenChange?.(newOpen);
   };
 
-  const handlePostSubmit = async () => {
-    setIsLoading(true);
-    if (formData.community) {
-      setOpen(false);
-      navigate(`/r/${formData.community}/submit`);
+  const handlePostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { title, content, imageFile, imagePreview } = formData;
+
+    if (!title.trim() || !subreddit) {
+      alert("Please enter a title and select a subreddit.");
+      return;
     }
-    setIsLoading(false);
+
+    try {
+      if (subreddit) {
+        setIsLoading(true);
+
+        await createPost({
+          subject: title.trim(),
+          body: content.trim(),
+          subreddit: subreddit._id,
+        });
+
+        setOpen(false);
+        navigate(`/r/${subredditName}`);
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Failed to create post. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCommunitySubmit = async (e: React.FormEvent) => {
@@ -105,6 +149,7 @@ export function CreateContentModal({
 
       setOpen(false);
       onOpenChange?.(false);
+      navigate(`r/${communityName}`);
     } catch (err: any) {
       setError(`Failed to create community. ${err.data.message}`);
     } finally {
@@ -119,6 +164,7 @@ export function CreateContentModal({
         title: "",
         content: "",
         imageFile: null as File | null,
+        imagePreview: null as string | null,
         communityName: "",
         communityDescription: "",
       });
@@ -244,6 +290,7 @@ export function CreateContentModal({
                   value={formData.title}
                   onChange={(e) => updateFormData("title", e.target.value)}
                   disabled={isLoading}
+                  maxLength={100}
                 />
               </div>
 
@@ -305,7 +352,7 @@ export function CreateContentModal({
               <Button
                 className="bg-purple-600 hover:bg-purple-700"
                 onClick={handlePostSubmit}
-                disabled={isLoading}
+                disabled={isLoading || !formData.title.trim()}
               >
                 {isLoading ? "Creating..." : "Create"}
               </Button>
