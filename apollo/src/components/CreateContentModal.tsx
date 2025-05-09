@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +30,7 @@ import {
 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useLocation, useNavigate } from "react-router";
 
 type CreateContentModalProps = {
   defaultOpen?: boolean;
@@ -44,11 +43,68 @@ export function CreateContentModal({
 }: CreateContentModalProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [postType, setPostType] = useState<"text" | "image" | "link">("text");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    community: "",
+    title: "",
+    content: "", // text posts
+    imageFile: null as File | null, // for image posts
+    communityName: "", // for com creation
+    communityDescription: "", // for com creation
+  });
+
+  const updateFormData = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     onOpenChange?.(newOpen);
   };
+
+  const handlePostSubmit = async () => {
+    setIsLoading(true);
+    if (formData.community) {
+      setOpen(false);
+      navigate(`/r/${formData.community}/submit`);
+    }
+    setIsLoading(false);
+  };
+
+  const handleCommunitySubmit = async () => {
+    setIsLoading(true);
+    console.log(formData);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (!open) {
+      setFormData({
+        community: "",
+        title: "",
+        content: "",
+        imageFile: null as File | null,
+        communityName: "",
+        communityDescription: "",
+      });
+      setError("");
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      const path = location.pathname;
+
+      const subredditMatch = path.match(/\/r\/([^\/]+)/);
+
+      if (subredditMatch && subredditMatch[1]) {
+        updateFormData("community", subredditMatch[1]);
+      }
+    }
+  }, [open, location.pathname]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -64,12 +120,14 @@ export function CreateContentModal({
             <TabsTrigger
               value="post"
               className="dark:data-[state=active]:bg-[#343536]"
+              disabled={isLoading}
             >
               Create Post
             </TabsTrigger>
             <TabsTrigger
               value="community"
               className="dark:data-[state=active]:bg-[#343536]"
+              disabled={isLoading}
             >
               Create Community
             </TabsTrigger>
@@ -78,6 +136,11 @@ export function CreateContentModal({
           {/* Create Post Tab */}
           <TabsContent value="post" className="space-y-4 mt-4">
             <DialogHeader>
+              {error && (
+                <div className="p-3 rounded-md bg-red-500/10 border border-red-500 text-red-500">
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              )}
               <DialogTitle>Create a Post</DialogTitle>
               <DialogDescription>
                 Share your thoughts, images, or links with the community.
@@ -90,6 +153,7 @@ export function CreateContentModal({
                 size="sm"
                 onClick={() => setPostType("text")}
                 className="flex gap-2"
+                disabled={isLoading}
               >
                 <FileText className="h-4 w-4" />
                 Text
@@ -99,6 +163,7 @@ export function CreateContentModal({
                 size="sm"
                 onClick={() => setPostType("image")}
                 className="flex gap-2"
+                disabled={isLoading}
               >
                 <Image className="h-4 w-4" />
                 Image
@@ -108,6 +173,7 @@ export function CreateContentModal({
                 size="sm"
                 onClick={() => setPostType("link")}
                 className="flex gap-2"
+                disabled={true}
               >
                 <Link className="h-4 w-4" />
                 Link
@@ -117,12 +183,21 @@ export function CreateContentModal({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="community">Community</Label>
-                <Select>
+                <Select
+                  disabled={isLoading}
+                  onValueChange={(value) => updateFormData("community", value)}
+                >
                   <SelectTrigger
                     id="community"
                     className="dark:bg-[#272729] dark:border-[#343536]"
                   >
-                    <SelectValue placeholder="Choose a community" />
+                    <SelectValue
+                      placeholder={
+                        formData.community
+                          ? `r/${formData.community}`
+                          : "Choose a community"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent className="dark:bg-[#1a1a1a] dark:border-[#343536]">
                     <SelectItem value="programming">r/programming</SelectItem>
@@ -133,13 +208,16 @@ export function CreateContentModal({
                   </SelectContent>
                 </Select>
               </div>
-
+              {/* Create Post Tab Inputs */}
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   placeholder="Title"
                   className="dark:bg-[#272729] dark:border-[#343536]"
+                  value={formData.title}
+                  onChange={(e) => updateFormData("title", e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
 
@@ -150,6 +228,9 @@ export function CreateContentModal({
                     id="content"
                     placeholder="Text (optional)"
                     className="min-h-[150px] dark:bg-[#272729] dark:border-[#343536]"
+                    value={formData.content}
+                    onChange={(e) => updateFormData("content", e.target.value)}
+                    disabled={isLoading}
                   />
                 </div>
               )}
@@ -188,14 +269,19 @@ export function CreateContentModal({
 
             <DialogFooter>
               <Button
+                disabled={isLoading}
                 variant="outline"
                 onClick={() => setOpen(false)}
                 className="dark:bg-[#272729] dark:border-[#343536]"
               >
                 Cancel
               </Button>
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                Post
+              <Button
+                className="bg-purple-600 hover:bg-purple-700"
+                onClick={handlePostSubmit}
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating..." : "Create"}
               </Button>
             </DialogFooter>
           </TabsContent>
@@ -203,6 +289,11 @@ export function CreateContentModal({
           {/* Create Community Tab */}
           <TabsContent value="community" className="space-y-4 mt-4">
             <DialogHeader>
+              {error && (
+                <div className="p-3 rounded-md bg-red-500/10 border border-red-500 text-red-500">
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              )}
               <DialogTitle>Create a Community</DialogTitle>
               <DialogDescription>
                 Start your own community on Apollo.
@@ -220,6 +311,12 @@ export function CreateContentModal({
                     id="community-name"
                     placeholder="community_name"
                     className="rounded-l-none dark:bg-[#272729] dark:border-[#343536]"
+                    value={formData.communityName}
+                    maxLength={21}
+                    onChange={(e) =>
+                      updateFormData("communityName", e.target.value)
+                    }
+                    disabled={isLoading}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -229,7 +326,7 @@ export function CreateContentModal({
 
               <div className="space-y-2">
                 <Label htmlFor="community-type">Community Type</Label>
-                <Select>
+                <Select disabled={true}>
                   <SelectTrigger
                     id="community-type"
                     className="dark:bg-[#272729] dark:border-[#343536]"
@@ -268,6 +365,12 @@ export function CreateContentModal({
                   id="community-description"
                   placeholder="Description"
                   className="dark:bg-[#272729] dark:border-[#343536]"
+                  disabled={isLoading}
+                  value={formData.communityDescription}
+                  onChange={(e) =>
+                    updateFormData("communityDescription", e.target.value)
+                  }
+                  maxLength={100}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   This is how new members come to understand your community.
@@ -280,11 +383,16 @@ export function CreateContentModal({
                 variant="outline"
                 onClick={() => setOpen(false)}
                 className="dark:bg-[#272729] dark:border-[#343536]"
+                disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                Create Community
+              <Button
+                className="bg-purple-600 hover:bg-purple-700"
+                disabled={isLoading}
+                onClick={handleCommunitySubmit}
+              >
+                {isLoading ? "Creating..." : "Create"}
               </Button>
             </DialogFooter>
           </TabsContent>
