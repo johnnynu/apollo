@@ -1,7 +1,240 @@
-import React from "react";
+import { useParams } from "react-router";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ArrowBigUp,
+  ArrowBigDown,
+  MessageSquare,
+  Share2,
+  Bookmark,
+  MoreHorizontal,
+  Bell,
+} from "lucide-react";
+
+// subreddit variable should contain:
+// name
+// description
 
 const SubredditPage = () => {
-  return <div>SubredditPage</div>;
+  const { subredditName } = useParams();
+
+  const subreddit = useQuery(api.subreddit.get, { name: subredditName || "" });
+
+  // Mock posts data for demonstration
+  const mockPosts = [
+    {
+      id: "1",
+      title: "Welcome to r/Apollo",
+      content:
+        "This is the first post in our community. Feel free to introduce yourself!",
+      author: "apollo_admin",
+      upvotes: 42,
+      comments: 15,
+      createdAt: "2 days ago",
+    },
+    {
+      id: "2",
+      title: "What features would you like to see in Apollo?",
+      content:
+        "We're gathering feedback for our next update. Let us know what you think!",
+      author: "dev_team",
+      upvotes: 28,
+      comments: 32,
+      createdAt: "1 day ago",
+    },
+    {
+      id: "3",
+      title: "Apollo vs other Reddit clients - Your thoughts?",
+      content: "How does Apollo compare to other Reddit clients you've used?",
+      author: "curious_user",
+      upvotes: 15,
+      comments: 8,
+      createdAt: "12 hours ago",
+    },
+  ];
+
+  if (subreddit === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-8 w-64 bg-muted rounded mb-4"></div>
+          <div className="h-4 w-48 bg-muted rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!subreddit) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h1 className="text-2xl font-bold mb-2">Subreddit Not Found</h1>
+        <p className="text-muted-foreground mb-4">
+          The subreddit you're looking for doesn't exist.
+        </p>
+        <Button>Return Home</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Subreddit Banner */}
+      <div className="h-32 bg-primary/20 relative">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent h-16"></div>
+      </div>
+
+      {/* Subreddit Info */}
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row gap-6 -mt-6 relative">
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="bg-card rounded-t-lg shadow-sm p-4 mb-4">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl">
+                  {subreddit.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold">r/{subreddit.name}</h1>
+                  <p className="text-muted-foreground text-sm">
+                    r/{subreddit.name}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Bell className="h-4 w-4" />
+                    Join
+                  </Button>
+                </div>
+              </div>
+              <p className="mt-4 text-sm">{subreddit.description}</p>
+            </div>
+
+            {/* Create Post Card */}
+            <Card className="mb-4">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-muted"></div>
+                  <input
+                    type="text"
+                    placeholder="Create Post"
+                    className="flex-1 bg-muted rounded-full px-4 py-2 text-sm focus:outline-none"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Posts */}
+            <div className="space-y-4">
+              {mockPosts.map((post) => (
+                <Card
+                  key={post.id}
+                  className="overflow-hidden hover:border-primary/50 transition-colors"
+                >
+                  <div className="flex">
+                    {/* Voting */}
+                    <div className="bg-muted w-12 flex flex-col items-center py-2">
+                      <button className="text-muted-foreground hover:text-primary">
+                        <ArrowBigUp className="h-6 w-6" />
+                      </button>
+                      <span className="font-medium text-sm py-1">
+                        {post.upvotes}
+                      </span>
+                      <button className="text-muted-foreground hover:text-destructive">
+                        <ArrowBigDown className="h-6 w-6" />
+                      </button>
+                    </div>
+
+                    {/* Post Content */}
+                    <div className="flex-1 p-3">
+                      <div className="text-xs text-muted-foreground mb-1">
+                        Posted by u/{post.author} {post.createdAt}
+                      </div>
+                      <h3 className="text-lg font-medium mb-2">{post.title}</h3>
+                      <p className="text-sm mb-3">{post.content}</p>
+
+                      {/* Post Actions */}
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
+                          <MessageSquare className="h-4 w-4" />
+                          {post.comments} Comments
+                        </button>
+                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
+                          <Share2 className="h-4 w-4" />
+                          Share
+                        </button>
+                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
+                          <Bookmark className="h-4 w-4" />
+                          Save
+                        </button>
+                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="md:w-80 space-y-4">
+            <Card>
+              <CardHeader className="bg-primary text-primary-foreground">
+                <CardTitle>About Community</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <p className="text-sm mb-4">{subreddit.description}</p>
+                <div className="flex items-center gap-2 text-sm mb-4">
+                  <div>
+                    <div className="font-bold">1.2k</div>
+                    <div className="text-xs text-muted-foreground">Members</div>
+                  </div>
+                  <div className="h-8 w-px bg-border"></div>
+                  <div>
+                    <div className="font-bold">42</div>
+                    <div className="text-xs text-muted-foreground">Online</div>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Created Jan 1, 2023
+                </div>
+              </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button className="w-full">Create Post</Button>
+              </CardFooter>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Community Rules</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <ol className="list-decimal list-inside space-y-2 text-sm">
+                  <li>Be respectful to others</li>
+                  <li>No spam or self-promotion</li>
+                  <li>Use appropriate post flairs</li>
+                  <li>Follow Apollo's content policy</li>
+                </ol>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default SubredditPage;

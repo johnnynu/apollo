@@ -30,10 +30,6 @@ export function Header() {
     setCreateModal(true);
   };
 
-  const closeModal = () => {
-    setCreateModal(false);
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="flex h-16 items-center px-4 md:px-6">

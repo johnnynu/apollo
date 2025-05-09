@@ -56,6 +56,8 @@ export function CreateContentModal({
     communityDescription: "", // for com creation
   });
 
+  const createSubreddit = useMutation(api.subreddit.create);
+
   const updateFormData = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -74,10 +76,40 @@ export function CreateContentModal({
     setIsLoading(false);
   };
 
-  const handleCommunitySubmit = async () => {
-    setIsLoading(true);
-    console.log(formData);
-    setIsLoading(false);
+  const handleCommunitySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const { communityName, communityDescription } = formData;
+
+    if (!communityName) {
+      setError("Name is required");
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(communityName)) {
+      setError(
+        "Community name can only contain letters, numbers, and underscores."
+      );
+    }
+
+    if (communityName.length < 3 || communityName.length > 21) {
+      setError("Community name must be between 3 and 21 characters.");
+    }
+
+    try {
+      setIsLoading(true);
+
+      await createSubreddit({
+        name: communityName,
+        description: communityDescription,
+      });
+
+      setOpen(false);
+      onOpenChange?.(false);
+    } catch (err: any) {
+      setError(`Failed to create community. ${err.data.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -108,12 +140,6 @@ export function CreateContentModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
-          <Plus className="h-5 w-5" />
-          <span className="sr-only">Create content</span>
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] dark:bg-[#1a1a1a] dark:border-[#343536]">
         <Tabs defaultValue="post" className="w-full">
           <TabsList className="grid w-full grid-cols-2 dark:bg-[#272729]">
