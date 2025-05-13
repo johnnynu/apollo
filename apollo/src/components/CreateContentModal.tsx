@@ -6,7 +6,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -20,14 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Image,
-  Link,
-  FileText,
-  MessageSquare,
-  Plus,
-  ImageIcon,
-} from "lucide-react";
+import { Image, Link, FileText, MessageSquare, ImageIcon } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useLocation, useNavigate, useParams } from "react-router";
@@ -64,18 +56,45 @@ export function CreateContentModal({
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      updateFormData("imageFile", file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateFormData("imagePreview", reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      processSelectedFile(file);
     }
+  };
+
+  const processSelectedFile = (file: File) => {
+    updateFormData("imageFile", file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      updateFormData("imagePreview", reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
     updateFormData("imageFile", null);
     updateFormData("imagePreview", null);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.add("border-primary");
+  };
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("border-primary");
+  };
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("border-primary");
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        processSelectedFile(file);
+      }
+    }
+  };
+  const handleFileInputClick = () => {
+    document.getElementById("file-upload")?.click();
   };
 
   const { subredditName } = useParams();
@@ -92,7 +111,7 @@ export function CreateContentModal({
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { title, content, imageFile, imagePreview } = formData;
+    const { title, content, imageFile } = formData;
 
     if (!title.trim() || !subreddit) {
       alert("Please enter a title and select a subreddit.");
@@ -103,10 +122,27 @@ export function CreateContentModal({
       if (subreddit) {
         setIsLoading(true);
 
+        let imageUrl = undefined;
+
+        if (imageFile) {
+          const uploadUrl = await generateUploadUrl();
+          const res = await fetch(uploadUrl, {
+            method: "POST",
+            headers: { "Content-Type": imageFile.type },
+            body: imageFile,
+          });
+
+          if (!res.ok) throw new Error("Failed to upload image!");
+
+          const { storageId } = await res.json();
+          imageUrl = storageId;
+        }
+
         await createPost({
           subject: title.trim(),
           body: content.trim(),
           subreddit: subreddit._id,
+          storageId: imageUrl,
         });
 
         setOpen(false);
@@ -311,18 +347,62 @@ export function CreateContentModal({
               {postType === "image" && (
                 <div className="space-y-2">
                   <Label htmlFor="image">Image</Label>
-                  <div className="border-2 border-dashed rounded-md p-6 text-center dark:border-[#343536]">
-                    <ImageIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Drag and drop an image, or click to select
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="dark:bg-[#272729] dark:border-[#343536]"
-                    >
-                      Upload Image
-                    </Button>
+                  <div
+                    className="border-2 border-dashed rounded-md p-6 text-center dark:border-[#343536]"
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    {formData.imagePreview ? (
+                      <div className="space-y-4">
+                        <div className="relative mx-auto max-w-xs overflow-hidden rounded-md">
+                          <img
+                            src={formData.imagePreview}
+                            alt="Preview"
+                            className="max-h-64 max-w-full mx-auto object-contain"
+                          />
+                        </div>
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="dark:bg-[#272729] dark:border-[#343536]"
+                            onClick={handleFileInputClick}
+                          >
+                            Change Image
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleRemoveImage}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Drag and drop an image, or click to select
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="dark:bg-[#272729] dark:border-[#343536]"
+                          onClick={handleFileInputClick}
+                        >
+                          Upload Image
+                        </Button>
+                      </>
+                    )}
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageSelect}
+                    />
                   </div>
                 </div>
               )}
