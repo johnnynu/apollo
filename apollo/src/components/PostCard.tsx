@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 interface Post {
   _id: Id<"post">;
@@ -157,9 +159,18 @@ const PostCard = ({
     }
   };
 
+  const deletePost = useMutation(api.post.deletePost);
+
   const handleComment = () => {};
 
-  const handleDelete = async () => {};
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you would like to delete this post?")) {
+      await deletePost({ postId: post._id });
+      if (expandedView) {
+        navigate("/");
+      }
+    }
+  };
 
   const handleSubmitComment = (content: string) => {};
 
