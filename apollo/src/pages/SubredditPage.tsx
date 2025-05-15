@@ -18,6 +18,7 @@ import {
   MoreHorizontal,
   Bell,
 } from "lucide-react";
+import PostCard from "@/components/PostCard";
 
 // subreddit variable should contain:
 // name
@@ -27,39 +28,6 @@ const SubredditPage = () => {
   const { subredditName } = useParams();
 
   const subreddit = useQuery(api.subreddit.get, { name: subredditName || "" });
-
-  // Mock posts data for demonstration
-  const mockPosts = [
-    {
-      id: "1",
-      title: "Welcome to r/Apollo",
-      content:
-        "This is the first post in our community. Feel free to introduce yourself!",
-      author: "apollo_admin",
-      upvotes: 42,
-      comments: 15,
-      createdAt: "2 days ago",
-    },
-    {
-      id: "2",
-      title: "What features would you like to see in Apollo?",
-      content:
-        "We're gathering feedback for our next update. Let us know what you think!",
-      author: "dev_team",
-      upvotes: 28,
-      comments: 32,
-      createdAt: "1 day ago",
-    },
-    {
-      id: "3",
-      title: "Apollo vs other Reddit clients - Your thoughts?",
-      content: "How does Apollo compare to other Reddit clients you've used?",
-      author: "curious_user",
-      upvotes: 15,
-      comments: 8,
-      createdAt: "12 hours ago",
-    },
-  ];
 
   if (subreddit === undefined) {
     return (
@@ -137,55 +105,15 @@ const SubredditPage = () => {
 
             {/* Posts */}
             <div className="space-y-4">
-              {mockPosts.map((post) => (
-                <Card
-                  key={post.id}
-                  className="overflow-hidden hover:border-primary/50 transition-colors"
-                >
-                  <div className="flex">
-                    {/* Voting */}
-                    <div className="bg-muted w-12 flex flex-col items-center py-2">
-                      <button className="text-muted-foreground hover:text-primary">
-                        <ArrowBigUp className="h-6 w-6" />
-                      </button>
-                      <span className="font-medium text-sm py-1">
-                        {post.upvotes}
-                      </span>
-                      <button className="text-muted-foreground hover:text-destructive">
-                        <ArrowBigDown className="h-6 w-6" />
-                      </button>
-                    </div>
-
-                    {/* Post Content */}
-                    <div className="flex-1 p-3">
-                      <div className="text-xs text-muted-foreground mb-1">
-                        Posted by u/{post.author} {post.createdAt}
-                      </div>
-                      <h3 className="text-lg font-medium mb-2">{post.title}</h3>
-                      <p className="text-sm mb-3">{post.content}</p>
-
-                      {/* Post Actions */}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
-                          <MessageSquare className="h-4 w-4" />
-                          {post.comments} Comments
-                        </button>
-                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
-                          <Share2 className="h-4 w-4" />
-                          Share
-                        </button>
-                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
-                          <Bookmark className="h-4 w-4" />
-                          Save
-                        </button>
-                        <button className="flex items-center gap-1 hover:bg-muted p-1 rounded">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+              {subreddit.posts?.length === 0 ? (
+                <div>
+                  <p>No posts yet. Be the first to post!</p>
+                </div>
+              ) : (
+                subreddit.posts?.map((post) => (
+                  <PostCard key={post._id} post={post} />
+                ))
+              )}
             </div>
           </div>
 
