@@ -109,6 +109,11 @@ export function CreateContentModal({
     onOpenChange?.(newOpen);
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    onOpenChange?.(false);
+  };
+
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const { title, content, imageFile } = formData;
@@ -145,7 +150,7 @@ export function CreateContentModal({
           storageId: imageUrl,
         });
 
-        setOpen(false);
+        handleClose();
         navigate(`/r/${subredditName}`);
       }
     } catch (err) {
@@ -183,8 +188,7 @@ export function CreateContentModal({
         description: communityDescription,
       });
 
-      setOpen(false);
-      onOpenChange?.(false);
+      handleClose();
       navigate(`r/${communityName}`);
     } catch (err: any) {
       setError(`Failed to create community. ${err.data.message}`);
@@ -424,7 +428,7 @@ export function CreateContentModal({
               <Button
                 disabled={isLoading}
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={() => handleClose()}
                 className="dark:bg-[#272729] dark:border-[#343536]"
               >
                 Cancel
@@ -534,7 +538,7 @@ export function CreateContentModal({
             <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={() => handleClose()}
                 className="dark:bg-[#272729] dark:border-[#343536]"
                 disabled={isLoading}
               >
