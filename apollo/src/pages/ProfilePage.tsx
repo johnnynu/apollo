@@ -13,6 +13,9 @@ const ProfilePage = () => {
   const posts = useQuery(api.post.getUserPosts, {
     authorUsername: username || "",
   });
+  const postCount = useQuery(api.users.getPublicUser, {
+    username: username || "",
+  });
 
   // Format date for display - using a placeholder date since we don't have actual user data
   const formatDate = (dateString: string) => {
@@ -165,7 +168,9 @@ const ProfilePage = () => {
               <div className="pt-2 border-t dark:border-[#343536]">
                 <div className="flex justify-between py-2">
                   <span className="text-sm text-muted-foreground">Posts</span>
-                  <span className="text-sm font-medium">{posts.length}</span>
+                  <span className="text-sm font-medium">
+                    {postCount?.posts ?? 0}
+                  </span>
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-sm text-muted-foreground">

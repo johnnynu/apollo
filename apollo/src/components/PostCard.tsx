@@ -187,7 +187,7 @@ const CommentSection = ({
       {/* Comments section */}
       <div className="max-w-2xl w-full mx-auto flex items-center gap-2 px-2">
         <MessageSquare className="h-5 w-5 text-muted-foreground" />
-        <h3 className="font-medium">Comments (0)</h3>
+        <h3 className="font-medium">Comments</h3>
       </div>
 
       <Separator className="max-w-2xl w-full mx-auto dark:bg-[#343536]" />
@@ -224,6 +224,11 @@ const PostCard = ({
   const createComment = useMutation(api.comments.create);
 
   const comments = useQuery(api.comments.get, { postId: post._id });
+  const commentCount = useQuery(api.comments.getCommentCount, {
+    postId: post._id,
+  });
+
+  const deletePost = useMutation(api.post.deletePost);
 
   const handleVote = (direction: "up" | "down") => {
     if (userVote === direction) {
@@ -253,7 +258,9 @@ const PostCard = ({
   };
 
   const handleDelete = async () => {
-    // Original function preserved
+    deletePost({
+      postId: post._id,
+    });
   };
 
   const handleSubmitComment = (content: string) => {
@@ -325,7 +332,7 @@ const PostCard = ({
                 onClick={handleComment}
               >
                 <MessageSquare className="h-4 w-4" />
-                <span>0 comments</span>
+                <span>{commentCount ?? 0} comment(s)</span>
               </Button>
               <Button
                 variant="ghost"
