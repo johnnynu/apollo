@@ -14,6 +14,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     authorId: v.id("users"),
   }),
+
   post: defineTable({
     subject: v.string(),
     body: v.string(),
@@ -23,4 +24,10 @@ export default defineSchema({
   })
     .index("bySubreddit", ["subreddit"])
     .index("byAuthor", ["authorId"]),
+
+  comments: defineTable({
+    authorId: v.id("users"),
+    content: v.string(),
+    postId: v.id("post"),
+  }).index("byPost", ["postId"]),
 });

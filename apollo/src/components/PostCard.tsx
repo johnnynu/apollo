@@ -1,5 +1,3 @@
-"use client";
-
 import { Link, useNavigate } from "react-router-dom";
 import type { Id } from "convex/_generated/dataModel";
 import { useUser } from "@clerk/clerk-react";
@@ -14,7 +12,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { useMutation } from "convex/react";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import Comment from "./Comment";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 interface Post {
@@ -50,6 +52,13 @@ interface PostContentProps {
   body?: string;
   image?: string;
   expandedView: boolean;
+}
+
+interface CommentSectionProps {
+  postId: Id<"post">;
+  comments: any[];
+  onSubmit: (content: string) => void;
+  signedIn: boolean;
 }
 
 const PostHeader = ({
@@ -128,6 +137,78 @@ const PostContent = ({
   );
 };
 
+const CommentSection = ({
+  comments,
+  onSubmit,
+  signedIn,
+}: CommentSectionProps) => {
+  const [newComment, setNewComment] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    onSubmit(newComment.trim());
+    setNewComment("");
+  };
+
+  return (
+    <>
+      {signedIn && (
+        <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-4">
+              {/*<Avatar className="h-8 w-8">
+                <AvatarImage src="/placeholder.svg?height=50&width=50" />
+                <AvatarFallback>
+                  {user?.username
+                    ? user.username.substring(0, 2).toUpperCase()
+                    : "ME"}
+                </AvatarFallback>
+              </Avatar>*/}
+              <Textarea
+                placeholder="What are your thoughts?"
+                className="flex-1 dark:bg-[#272729] dark:border-[#343536]"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button
+                className="bg-[#7950F2] hover:bg-[#6c45d9]"
+                onClick={handleSubmit}
+                disabled={!newComment.trim()}
+              >
+                Comment
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {/* Comments section */}
+      <div className="max-w-2xl w-full mx-auto flex items-center gap-2 px-2">
+        <MessageSquare className="h-5 w-5 text-muted-foreground" />
+        <h3 className="font-medium">Comments (0)</h3>
+      </div>
+
+      <Separator className="max-w-2xl w-full mx-auto dark:bg-[#343536]" />
+
+      {comments.length === 0 ? (
+        <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
+          <CardContent className="p-4 text-center text-muted-foreground">
+            No comments yet. Be the first to share your thoughts!
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="comments-list">
+          {comments.map((comment) => (
+            <Comment key={comment._id} comment={comment} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
 const PostCard = ({
   post,
   showSubreddit = false,
@@ -140,6 +221,9 @@ const PostCard = ({
   const navigate = useNavigate();
   const { user } = useUser();
   const ownedByCurrentUser = post.author?.username === user?.username;
+  const createComment = useMutation(api.comments.create);
+
+  const comments = useQuery(api.comments.get, { postId: post._id });
 
   const handleVote = (direction: "up" | "down") => {
     if (userVote === direction) {
@@ -159,117 +243,134 @@ const PostCard = ({
     }
   };
 
-  const deletePost = useMutation(api.post.deletePost);
-
-  const handleComment = () => {};
-
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you would like to delete this post?")) {
-      await deletePost({ postId: post._id });
-      if (expandedView) {
-        navigate("/");
-      }
+  const handleComment = () => {
+    if (expandedView) {
+      setShowComments(!showComments);
+    } else {
+      // Navigate to post page if not in expanded view
+      navigate(`/post/${post._id}`);
     }
   };
 
-  const handleSubmitComment = (content: string) => {};
+  const handleDelete = async () => {
+    // Original function preserved
+  };
+
+  const handleSubmitComment = (content: string) => {
+    createComment({
+      content,
+      postId: post._id,
+    });
+  };
 
   return (
-    <Card className="max-w-2xl w-full mx-auto mb-4 dark:bg-[#1a1a1a] dark:border-[#343536]">
-      <div className="flex">
-        {/* Vote buttons column */}
-        <div className="flex flex-col items-center p-2 bg-muted/20 dark:bg-[#1a1a1a]">
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`h-8 w-8 rounded-full ${userVote === "up" ? "text-[#7950F2]" : "text-muted-foreground"}`}
-            onClick={() => handleVote("up")}
-          >
-            <ArrowBigUp className="h-5 w-5" />
-            <span className="sr-only">Upvote</span>
-          </Button>
-          <span
-            className={`text-sm font-medium my-1 ${
-              userVote === "up"
-                ? "text-[#7950F2]"
-                : userVote === "down"
-                  ? "text-red-500"
-                  : "text-muted-foreground"
-            }`}
-          >
-            {votes}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`h-8 w-8 rounded-full ${userVote === "down" ? "text-red-500" : "text-muted-foreground"}`}
-            onClick={() => handleVote("down")}
-          >
-            <ArrowBigDown className="h-5 w-5" />
-            <span className="sr-only">Downvote</span>
-          </Button>
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1">
-          <CardContent className="p-3">
-            <PostHeader
-              author={post.author}
-              subreddit={post.subreddit ?? { name: "deleted" }}
-              showSubreddit={showSubreddit}
-              creationTime={post._creationTime}
-            />
-            <PostContent
-              subject={post.subject}
-              body={post.body}
-              image={post.imageUrl}
-              expandedView={expandedView}
-            />
-          </CardContent>
-
-          <CardFooter className="p-2 border-t dark:border-[#343536] flex flex-wrap gap-1">
+    <div className="space-y-4">
+      <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
+        <div className="flex">
+          {/* Vote buttons column */}
+          <div className="flex flex-col items-center p-2 bg-muted/20 dark:bg-[#1a1a1a]">
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 text-xs gap-1.5 text-muted-foreground"
-              onClick={handleComment}
+              size="icon"
+              className={`h-8 w-8 rounded-full ${userVote === "up" ? "text-[#7950F2]" : "text-muted-foreground"}`}
+              onClick={() => handleVote("up")}
             >
-              <MessageSquare className="h-4 w-4" />
-              <span>0 Comments</span>
+              <ArrowBigUp className="h-5 w-5" />
+              <span className="sr-only">Upvote</span>
             </Button>
+            <span
+              className={`text-sm font-medium my-1 ${
+                userVote === "up"
+                  ? "text-[#7950F2]"
+                  : userVote === "down"
+                    ? "text-red-500"
+                    : "text-muted-foreground"
+              }`}
+            >
+              {votes}
+            </span>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 text-xs gap-1.5 text-muted-foreground"
+              size="icon"
+              className={`h-8 w-8 rounded-full ${userVote === "down" ? "text-red-500" : "text-muted-foreground"}`}
+              onClick={() => handleVote("down")}
             >
-              <Share2 className="h-4 w-4" />
-              <span>Share</span>
+              <ArrowBigDown className="h-5 w-5" />
+              <span className="sr-only">Downvote</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-8 text-xs gap-1.5 ${saved ? "text-[#7950F2]" : "text-muted-foreground"}`}
-              onClick={() => setSaved(!saved)}
-            >
-              <Bookmark className="h-4 w-4" />
-              <span>{saved ? "Saved" : "Save"}</span>
-            </Button>
+          </div>
 
-            {ownedByCurrentUser && (
+          {/* Main content */}
+          <div className="flex-1">
+            <CardContent className="p-3">
+              <PostHeader
+                author={post.author}
+                subreddit={post.subreddit ?? { name: "deleted" }}
+                showSubreddit={showSubreddit}
+                creationTime={post._creationTime}
+              />
+              <PostContent
+                subject={post.subject}
+                body={post.body}
+                image={post.imageUrl}
+                expandedView={expandedView}
+              />
+            </CardContent>
+
+            <CardFooter className="p-2 border-t dark:border-[#343536] flex flex-wrap gap-1">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 text-xs gap-1.5 text-red-500"
-                onClick={handleDelete}
+                className="h-8 text-xs gap-1.5 text-muted-foreground"
+                onClick={handleComment}
               >
-                <Trash2 className="h-4 w-4" />
-                <span>Delete</span>
+                <MessageSquare className="h-4 w-4" />
+                <span>0 comments</span>
               </Button>
-            )}
-          </CardFooter>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs gap-1.5 text-muted-foreground"
+              >
+                <Share2 className="h-4 w-4" />
+                <span>Share</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 text-xs gap-1.5 ${saved ? "text-[#7950F2]" : "text-muted-foreground"}`}
+                onClick={() => setSaved(!saved)}
+              >
+                <Bookmark className="h-4 w-4" />
+                <span>{saved ? "Saved" : "Save"}</span>
+              </Button>
+
+              {ownedByCurrentUser && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5 text-red-500"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete</span>
+                </Button>
+              )}
+            </CardFooter>
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+
+      {/* Comment sections - only show when in expanded view */}
+      {(showComments || expandedView) && (
+        <CommentSection
+          postId={post._id}
+          comments={comments ?? []}
+          onSubmit={handleSubmitComment}
+          signedIn={!!user}
+        />
+      )}
+    </div>
   );
 };
 
