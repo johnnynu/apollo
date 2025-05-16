@@ -5,13 +5,20 @@ import { useState } from "react";
 import {
   ArrowBigDown,
   ArrowBigUp,
+  ArrowDown,
+  ArrowUp,
   Bookmark,
   MessageSquare,
   Share2,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import Comment from "./Comment";
@@ -77,34 +84,24 @@ const VoteButtons = ({
   onDownvote,
 }: VoteButtonProps) => {
   return (
-    <div className="flex flex-col items-center p-2 bg-muted/20 dark:bg-[#1a1a1a]">
+    <div className="flex flex-col items-center gap-1 p-2">
       <Button
         variant="ghost"
         size="icon"
-        className={`h-8 w-8 rounded-full ${hasUpvoted ? "text-[#7950F2]" : "text-muted-foreground"}`}
+        className={`h-6 w-6 ${hasUpvoted ? "text-purple-500" : "text-muted-foreground"}`}
         onClick={onUpvote}
       >
-        <ArrowBigUp className="h-5 w-5" />
+        <ArrowUp className="h-5 w-5" />
         <span className="sr-only">Upvote</span>
       </Button>
-      <span
-        className={`text-sm font-medium my-1 ${
-          hasUpvoted
-            ? "text-[#7950F2]"
-            : hasDownvoted
-              ? "text-red-500"
-              : "text-muted-foreground"
-        }`}
-      >
-        {voteCount?.total ?? 0}
-      </span>
+      <span className="text-sm font-medium">{voteCount?.total ?? 0}</span>
       <Button
         variant="ghost"
         size="icon"
-        className={`h-8 w-8 rounded-full ${hasDownvoted ? "text-red-500" : "text-muted-foreground"}`}
+        className={`h-6 w-6 ${hasDownvoted ? "text-red-500" : "text-muted-foreground"}`}
         onClick={onDownvote}
       >
-        <ArrowBigDown className="h-5 w-5" />
+        <ArrowDown className="h-5 w-5" />
         <span className="sr-only">Downvote</span>
       </Button>
     </div>
@@ -118,26 +115,28 @@ const PostHeader = ({
   creationTime,
 }: PostHeaderProps) => {
   return (
-    <div className="flex items-center text-xs text-muted-foreground mb-2">
+    <div className="flex items-center gap-2 mb-2">
       {showSubreddit && subreddit && (
-        <Link
-          to={`/r/${subreddit.name}`}
-          className="font-medium hover:underline mr-2"
-        >
-          r/{subreddit.name}
-        </Link>
+        <>
+          <Link
+            to={`/r/${subreddit.name}`}
+            className="text-xs font-medium hover:underline"
+          >
+            r/{subreddit.name}
+          </Link>
+        </>
       )}
-      <span className="mr-1">•</span>
-      <span>Posted by</span>
-      {author ? (
-        <Link to={`/u/${author.username}`} className="hover:underline mx-1">
-          u/{author.username}
-        </Link>
-      ) : (
-        <span className="mx-1">u/deleted</span>
-      )}
-      <span className="mr-1">•</span>
-      <span>{new Date(creationTime).toLocaleString()}</span>
+      <span className="text-xs text-muted-foreground">
+        Posted by{" "}
+        {author ? (
+          <Link to={`/u/${author.username}`} className="hover:underline">
+            u/{author.username}
+          </Link>
+        ) : (
+          <span>u/deleted</span>
+        )}{" "}
+        {new Date(creationTime).toLocaleString()}
+      </span>
     </div>
   );
 };
@@ -318,7 +317,7 @@ const PostCard = ({
   return (
     <div className="space-y-4">
       <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
-        <div className="flex">
+        <CardHeader className="flex flex-row items-start gap-4 p-4">
           {/* Vote buttons column */}
           <VoteButtons
             voteCount={voteCount}
@@ -329,65 +328,64 @@ const PostCard = ({
           />
 
           {/* Main content */}
-          <div className="flex-1">
-            <CardContent className="p-3">
-              <PostHeader
-                author={post.author}
-                subreddit={post.subreddit ?? { name: "deleted" }}
-                showSubreddit={showSubreddit}
-                creationTime={post._creationTime}
-              />
-              <PostContent
-                subject={post.subject}
-                body={post.body}
-                image={post.imageUrl}
-                expandedView={expandedView}
-                postId={post._id}
-              />
-            </CardContent>
-
-            <CardFooter className="p-2 border-t dark:border-[#343536] flex flex-wrap gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs gap-1.5 text-muted-foreground"
-                onClick={handleComment}
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span>{commentCount ?? 0} comment(s)</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs gap-1.5 text-muted-foreground"
-              >
-                <Share2 className="h-4 w-4" />
-                <span>Share</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-8 text-xs gap-1.5 ${saved ? "text-[#7950F2]" : "text-muted-foreground"}`}
-                onClick={() => setSaved(!saved)}
-              >
-                <Bookmark className="h-4 w-4" />
-                <span>{saved ? "Saved" : "Save"}</span>
-              </Button>
-
-              {ownedByCurrentUser && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-xs gap-1.5 text-red-500"
-                  onClick={handleDelete}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>Delete</span>
-                </Button>
-              )}
-            </CardFooter>
+          <div className="grid gap-1">
+            <PostHeader
+              author={post.author}
+              subreddit={post.subreddit ?? { name: "deleted" }}
+              showSubreddit={showSubreddit}
+              creationTime={post._creationTime}
+            />
+            <PostContent
+              subject={post.subject}
+              body={post.body}
+              image={post.imageUrl}
+              expandedView={expandedView}
+              postId={post._id}
+            />
           </div>
-        </div>
+        </CardHeader>
+
+        <CardFooter className="border-t p-2 dark:border-[#343536]">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-muted-foreground"
+              onClick={handleComment}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="text-xs">{commentCount ?? 0} comment(s)</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-muted-foreground"
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="text-xs">Share</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-8 gap-1 ${saved ? "text-purple-500" : "text-muted-foreground"}`}
+              onClick={() => setSaved(!saved)}
+            >
+              <Bookmark className="h-4 w-4" />
+              <span className="text-xs">{saved ? "Saved" : "Save"}</span>
+            </Button>
+
+            {ownedByCurrentUser && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1 text-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="text-xs">Delete</span>
+              </Button>
+            )}
+          </div>
+        </CardFooter>
       </Card>
 
       {/* Comment sections - only show when in expanded view */}
