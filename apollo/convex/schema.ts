@@ -30,4 +30,18 @@ export default defineSchema({
     content: v.string(),
     postId: v.id("post"),
   }).index("byPost", ["postId"]),
+
+  downvote: defineTable({
+    postId: v.id("post"),
+    userId: v.id("users"),
+  })
+    .index("byPost", ["postId"])
+    .index("byUser", ["userId"]),
+
+  upvote: defineTable({
+    postId: v.id("post"),
+    userId: v.id("users"),
+  })
+    .index("byPost", ["postId"])
+    .index("byUser", ["userId"]),
 });

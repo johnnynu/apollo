@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import Comment from "./Comment";
 import { useMutation, useQuery } from "convex/react";
@@ -61,6 +60,56 @@ interface CommentSectionProps {
   onSubmit: (content: string) => void;
   signedIn: boolean;
 }
+
+interface VoteButtonProps {
+  voteCount: { total: number; upvotes: number; downvotes: number } | undefined;
+  hasUpvoted: boolean | undefined;
+  hasDownvoted: boolean | undefined;
+  onUpvote: () => void;
+  onDownvote: () => void;
+}
+
+const VoteButtons = ({
+  voteCount,
+  hasUpvoted,
+  hasDownvoted,
+  onUpvote,
+  onDownvote,
+}: VoteButtonProps) => {
+  return (
+    <div className="flex flex-col items-center p-2 bg-muted/20 dark:bg-[#1a1a1a]">
+      <Button
+        variant="ghost"
+        size="icon"
+        className={`h-8 w-8 rounded-full ${hasUpvoted ? "text-[#7950F2]" : "text-muted-foreground"}`}
+        onClick={onUpvote}
+      >
+        <ArrowBigUp className="h-5 w-5" />
+        <span className="sr-only">Upvote</span>
+      </Button>
+      <span
+        className={`text-sm font-medium my-1 ${
+          hasUpvoted
+            ? "text-[#7950F2]"
+            : hasDownvoted
+              ? "text-red-500"
+              : "text-muted-foreground"
+        }`}
+      >
+        {voteCount?.total ?? 0}
+      </span>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={`h-8 w-8 rounded-full ${hasDownvoted ? "text-red-500" : "text-muted-foreground"}`}
+        onClick={onDownvote}
+      >
+        <ArrowBigDown className="h-5 w-5" />
+        <span className="sr-only">Downvote</span>
+      </Button>
+    </div>
+  );
+};
 
 const PostHeader = ({
   author,
@@ -217,38 +266,32 @@ const PostCard = ({
   expandedView = false,
 }: PostCardProps) => {
   const [showComments, setShowComments] = useState(expandedView);
-  const [votes, setVotes] = useState(0);
-  const [userVote, setUserVote] = useState<"up" | "down" | null>(null);
   const [saved, setSaved] = useState(false);
   const navigate = useNavigate();
   const { user } = useUser();
   const ownedByCurrentUser = post.author?.username === user?.username;
   const createComment = useMutation(api.comments.create);
+  const toggleUpvote = useMutation(api.vote.toggleUpvote);
+  const toggleDownvote = useMutation(api.vote.toggleDownvote);
+
+  const voteCount = useQuery(api.vote.getVoteCounts, { postId: post._id });
+  const hasUpvoted = useQuery(api.vote.hasUpvoted, { postId: post._id });
+  const hasDownvoted = useQuery(api.vote.hasDownvoted, { postId: post._id });
 
   const comments = useQuery(api.comments.get, { postId: post._id });
   const commentCount = useQuery(api.comments.getCommentCount, {
     postId: post._id,
   });
 
-  const deletePost = useMutation(api.post.deletePost);
-
-  const handleVote = (direction: "up" | "down") => {
-    if (userVote === direction) {
-      // Undo vote
-      setVotes(direction === "up" ? votes - 1 : votes + 1);
-      setUserVote(null);
-    } else {
-      // Change vote
-      if (userVote === null) {
-        // First vote
-        setVotes(direction === "up" ? votes + 1 : votes - 1);
-      } else {
-        // Switching vote (e.g. from down to up)
-        setVotes(direction === "up" ? votes + 2 : votes - 2);
-      }
-      setUserVote(direction);
-    }
+  const onUpvote = () => {
+    toggleUpvote({ postId: post._id });
   };
+
+  const onDownvote = () => {
+    toggleDownvote({ postId: post._id });
+  };
+
+  const deletePost = useMutation(api.post.deletePost);
 
   const handleComment = () => {
     if (expandedView) {
@@ -277,37 +320,13 @@ const PostCard = ({
       <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
         <div className="flex">
           {/* Vote buttons column */}
-          <div className="flex flex-col items-center p-2 bg-muted/20 dark:bg-[#1a1a1a]">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 rounded-full ${userVote === "up" ? "text-[#7950F2]" : "text-muted-foreground"}`}
-              onClick={() => handleVote("up")}
-            >
-              <ArrowBigUp className="h-5 w-5" />
-              <span className="sr-only">Upvote</span>
-            </Button>
-            <span
-              className={`text-sm font-medium my-1 ${
-                userVote === "up"
-                  ? "text-[#7950F2]"
-                  : userVote === "down"
-                    ? "text-red-500"
-                    : "text-muted-foreground"
-              }`}
-            >
-              {votes}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 rounded-full ${userVote === "down" ? "text-red-500" : "text-muted-foreground"}`}
-              onClick={() => handleVote("down")}
-            >
-              <ArrowBigDown className="h-5 w-5" />
-              <span className="sr-only">Downvote</span>
-            </Button>
-          </div>
+          <VoteButtons
+            voteCount={voteCount}
+            hasUpvoted={hasUpvoted}
+            hasDownvoted={hasDownvoted}
+            onUpvote={user ? onUpvote : () => {}}
+            onDownvote={user ? onDownvote : () => {}}
+          />
 
           {/* Main content */}
           <div className="flex-1">
