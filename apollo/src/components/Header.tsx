@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { SignInButton, UserButton, useUser } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { CreateContentModal } from "./CreateContentModal";
+import SearchBar from "./SearchBar";
 
 export function Header() {
   const [mounted, setMounted] = useState(false);
@@ -61,18 +62,7 @@ export function Header() {
         </div>
 
         {/* Search Bar */}
-        <div className="flex-1 flex items-center justify-center px-4">
-          <div className="w-full max-w-sm md:max-w-md">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search Apollo"
-                className="pl-8 bg-muted focus-visible:ring-purple-500"
-              />
-            </div>
-          </div>
-        </div>
+        <SearchBar />
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
