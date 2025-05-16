@@ -52,6 +52,7 @@ interface PostContentProps {
   body?: string;
   image?: string;
   expandedView: boolean;
+  postId: Id<"post">;
 }
 
 interface CommentSectionProps {
@@ -97,6 +98,7 @@ const PostContent = ({
   body,
   image,
   expandedView,
+  postId,
 }: PostContentProps) => {
   return (
     <>
@@ -117,7 +119,7 @@ const PostContent = ({
       ) : (
         <div className="flex flex-col">
           <h2 className="text-lg font-semibold mb-2 hover:underline">
-            <Link to="#">{subject}</Link>
+            <Link to={`/post/${postId}`}>{subject}</Link>
           </h2>
           {body && (
             <p className="text-sm text-muted-foreground line-clamp-2">{body}</p>
@@ -321,6 +323,7 @@ const PostCard = ({
                 body={post.body}
                 image={post.imageUrl}
                 expandedView={expandedView}
+                postId={post._id}
               />
             </CardContent>
 

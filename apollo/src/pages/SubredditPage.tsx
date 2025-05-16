@@ -9,16 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ArrowBigUp,
-  ArrowBigDown,
-  MessageSquare,
-  Share2,
-  Bookmark,
-  MoreHorizontal,
-  Bell,
-} from "lucide-react";
+import { Bell } from "lucide-react";
 import PostCard from "@/components/PostCard";
+import { CreateContentModal } from "@/components/CreateContentModal";
 
 // subreddit variable should contain:
 // name
@@ -88,20 +81,6 @@ const SubredditPage = () => {
               </div>
               <p className="mt-4 text-sm">{subreddit.description}</p>
             </div>
-
-            {/* Create Post Card */}
-            <Card className="mb-4">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted"></div>
-                  <input
-                    type="text"
-                    placeholder="Create Post"
-                    className="flex-1 bg-muted rounded-full px-4 py-2 text-sm focus:outline-none"
-                  />
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Posts */}
             <div className="space-y-4">

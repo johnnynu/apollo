@@ -13,13 +13,14 @@ const ProfilePage = () => {
   const posts = useQuery(api.post.getUserPosts, {
     authorUsername: username || "",
   });
-  const postCount = useQuery(api.users.getPublicUser, {
+  const stats = useQuery(api.users.getPublicUser, {
     username: username || "",
   });
 
   // Format date for display - using a placeholder date since we don't have actual user data
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (timestamp: number | undefined) => {
+    if (!timestamp) return "Unknown Date";
+    const date = new Date(timestamp);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -27,8 +28,7 @@ const ProfilePage = () => {
     });
   };
 
-  // Placeholder join date - in a real app this would come from user data
-  const joinDate = formatDate("2021-06-15T00:00:00.000Z");
+  const joinDate = formatDate(stats?.joinDate);
 
   if (posts === undefined)
     return (
@@ -81,7 +81,9 @@ const ProfilePage = () => {
               <div className="mt-24 pt-2 flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-bold">u/{username}</h1>
-                  <p className="text-muted-foreground">Posts: {posts.length}</p>
+                  <p className="text-muted-foreground">
+                    Posts: {stats?.posts ?? 0}
+                  </p>
                 </div>
 
                 <div className="flex gap-2">
@@ -169,7 +171,7 @@ const ProfilePage = () => {
                 <div className="flex justify-between py-2">
                   <span className="text-sm text-muted-foreground">Posts</span>
                   <span className="text-sm font-medium">
-                    {postCount?.posts ?? 0}
+                    {stats?.posts ?? 0}
                   </span>
                 </div>
                 <div className="flex justify-between py-2">

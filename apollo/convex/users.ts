@@ -77,6 +77,7 @@ export const getPublicUser = query({
 
     return {
       posts: postCount,
+      joinDate: user._creationTime,
     };
   },
 });

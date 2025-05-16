@@ -20,7 +20,7 @@ export function Banner() {
         <img
           src="/public/redditbanner2.jpg"
           alt="Apollo space theme banner"
-          className="object-cover"
+          className="object-cover w-full h-full"
         />
         <div className="absolute bottom-4 left-4 flex items-center gap-3">
           <div className="relative w-12 h-12">
