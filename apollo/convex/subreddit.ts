@@ -37,7 +37,9 @@ export const get = query({
       .withIndex("bySubreddit", (q) => q.eq("subreddit", subreddit._id))
       .collect();
 
-    const enrichedPosts = await getEnrichedPosts(ctx, posts);
+    const enrichedPosts = (await getEnrichedPosts(ctx, posts)).sort(
+      (a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0)
+    );
 
     return { ...subreddit, posts: enrichedPosts };
   },

@@ -72,7 +72,7 @@ export async function getEnrichedPosts(
   ctx: QueryCtx,
   posts: Doc<"post">[]
 ): Promise<EnrichedPost[]> {
-  return Promise.all(posts.map((post) => getEnrichedPost(ctx, post)));
+  return Promise.all(posts.map((post) => getEnrichedPost(ctx, post)).sort());
 }
 
 export const getPost = query({
@@ -82,25 +82,6 @@ export const getPost = query({
     if (!post) return null;
 
     return getEnrichedPost(ctx, post);
-  },
-});
-
-export const getSubredditPosts = query({
-  args: { subredditName: v.string() },
-  handler: async (ctx, args): Promise<EnrichedPost[]> => {
-    const subreddit = await ctx.db
-      .query("subreddit")
-      .filter((q) => q.eq(q.field("name"), args.subredditName))
-      .unique();
-
-    if (!subreddit) return [];
-
-    const posts = await ctx.db
-      .query("post")
-      .withIndex("bySubreddit", (q) => q.eq("subreddit", subreddit._id))
-      .collect();
-
-    return getEnrichedPosts(ctx, posts);
   },
 });
 
@@ -119,7 +100,9 @@ export const getUserPosts = query({
       .withIndex("byAuthor", (q) => q.eq("authorId", user._id))
       .collect();
 
-    return getEnrichedPosts(ctx, posts);
+    return (await getEnrichedPosts(ctx, posts)).sort(
+      (a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0)
+    );
   },
 });
 
