@@ -138,3 +138,31 @@ export const deletePost = mutation({
     await counter.dec(ctx, postCountKey(user._id));
   },
 });
+
+export const search = query({
+  args: { queryStr: v.string(), subreddit: v.string() },
+  handler: async (ctx, args) => {
+    if (!args.queryStr) return [];
+
+    const subredditObject = await ctx.db
+      .query("subreddit")
+      .filter((q) => q.eq(q.field("name"), args.subreddit))
+      .unique();
+
+    if (!subredditObject) return [];
+
+    const posts = await ctx.db
+      .query("post")
+      .withSearchIndex("search_body", (q) =>
+        q.search("subject", args.queryStr).eq("subreddit", subredditObject._id)
+      )
+      .take(10);
+
+    return posts.map((post) => ({
+      _id: post._id,
+      title: post.subject,
+      type: "post",
+      name: subredditObject.name,
+    }));
+  },
+});
