@@ -10,6 +10,7 @@
 
 import type * as comments from "../comments.js";
 import type * as counter from "../counter.js";
+import type * as feed from "../feed.js";
 import type * as http from "../http.js";
 import type * as image from "../image.js";
 import type * as post from "../post.js";
@@ -34,6 +35,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   counter: typeof counter;
+  feed: typeof feed;
   http: typeof http;
   image: typeof image;
   post: typeof post;

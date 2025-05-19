@@ -56,7 +56,7 @@ const SubredditPage = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row gap-6 -mt-6 relative">
           {/* Main Content */}
-          <div className="flex-1">
+          <div className="flex-1 pb-8">
             <div className="bg-card rounded-t-lg shadow-sm p-4 mb-4">
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl">
@@ -83,7 +83,7 @@ const SubredditPage = () => {
             </div>
 
             {/* Posts */}
-            <div className="space-y-4">
+            <div className="space-y-4 w-full">
               {subreddit.posts?.length === 0 ? (
                 <div>
                   <p>No posts yet. Be the first to post!</p>

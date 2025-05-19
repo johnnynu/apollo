@@ -3,8 +3,6 @@ import type { Id } from "convex/_generated/dataModel";
 import { useUser } from "@clerk/clerk-react";
 import { useState } from "react";
 import {
-  ArrowBigDown,
-  ArrowBigUp,
   ArrowDown,
   ArrowUp,
   Bookmark,
@@ -19,6 +17,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import Comment from "./Comment";
@@ -84,7 +83,7 @@ const VoteButtons = ({
   onDownvote,
 }: VoteButtonProps) => {
   return (
-    <div className="flex flex-col items-center gap-1 p-2">
+    <div className="flex flex-col items-center gap-1">
       <Button
         variant="ghost"
         size="icon"
@@ -118,6 +117,15 @@ const PostHeader = ({
     <div className="flex items-center gap-2 mb-2">
       {showSubreddit && subreddit && (
         <>
+          <Avatar className="h-5 w-5">
+            <AvatarImage
+              src="/placeholder.svg?height=20&width=20"
+              alt={`r/${subreddit.name}`}
+            />
+            <AvatarFallback>
+              {subreddit.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <Link
             to={`/r/${subreddit.name}`}
             className="text-xs font-medium hover:underline"
@@ -148,39 +156,78 @@ const PostContent = ({
   expandedView,
   postId,
 }: PostContentProps) => {
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   return (
     <>
       {expandedView ? (
         <>
           <h2 className="text-lg font-semibold mb-2">{subject}</h2>
+          {body && <p className="text-sm text-muted-foreground">{body}</p>}
           {image && (
-            <div className="my-3 rounded-md overflow-hidden">
+            <div className="mt-2 rounded-md overflow-hidden bg-[#272729] border border-[#343536] relative">
               <img
                 src={image || "/placeholder.svg"}
                 alt="Post content"
-                className="w-full h-auto object-cover"
+                className="w-full h-auto object-contain max-h-[512px] cursor-pointer"
+                onClick={() => setIsImageModalOpen(true)}
               />
             </div>
           )}
-          {body && <p className="text-sm text-muted-foreground">{body}</p>}
         </>
       ) : (
         <div className="flex flex-col">
-          <h2 className="text-lg font-semibold mb-2 hover:underline">
-            <Link to={`/post/${postId}`}>{subject}</Link>
-          </h2>
+          <Link to={`/post/${postId}`}>
+            <h2 className="text-lg font-semibold mb-2 hover:underline">
+              {subject}
+            </h2>
+          </Link>
           {body && (
             <p className="text-sm text-muted-foreground line-clamp-2">{body}</p>
           )}
           {image && (
-            <div className="mt-3 rounded-md overflow-hidden max-h-48">
-              <img
-                src={image || "/placeholder.svg"}
-                alt="Post content"
-                className="w-full h-auto object-cover"
-              />
+            <div className="mt-2 rounded-md overflow-hidden bg-[#272729] border border-[#343536] relative">
+              <div className="relative pt-[56.25%]">
+                {" "}
+                {/* 16:9 aspect ratio container */}
+                <img
+                  src={image || "/placeholder.svg"}
+                  alt="Post content"
+                  className="absolute inset-0 w-full h-full object-contain cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsImageModalOpen(true);
+                  }}
+                />
+              </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Image Modal - shared between both views */}
+      {isImageModalOpen && image && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          <div className="max-w-[90vw] max-h-[90vh] relative">
+            <img
+              src={image || "/placeholder.svg"}
+              alt="Enlarged post content"
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+            <Button
+              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsImageModalOpen(false);
+              }}
+            >
+              <span className="sr-only">Close</span>✕
+            </Button>
+          </div>
         </div>
       )}
     </>
@@ -202,19 +249,11 @@ const CommentSection = ({
   };
 
   return (
-    <>
+    <div className="w-full space-y-4">
       {signedIn && (
-        <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
+        <Card className="w-full dark:bg-[#1a1a1a] dark:border-[#343536]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-4">
-              {/*<Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg?height=50&width=50" />
-                <AvatarFallback>
-                  {user?.username
-                    ? user.username.substring(0, 2).toUpperCase()
-                    : "ME"}
-                </AvatarFallback>
-              </Avatar>*/}
               <Textarea
                 placeholder="What are your thoughts?"
                 className="flex-1 dark:bg-[#272729] dark:border-[#343536]"
@@ -234,28 +273,29 @@ const CommentSection = ({
           </CardContent>
         </Card>
       )}
+
       {/* Comments section */}
-      <div className="max-w-2xl w-full mx-auto flex items-center gap-2 px-2">
+      <div className="w-full flex items-center gap-2 px-2">
         <MessageSquare className="h-5 w-5 text-muted-foreground" />
         <h3 className="font-medium">Comments</h3>
       </div>
 
-      <Separator className="max-w-2xl w-full mx-auto dark:bg-[#343536]" />
+      <Separator className="w-full dark:bg-[#343536]" />
 
       {comments.length === 0 ? (
-        <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
+        <Card className="w-full dark:bg-[#1a1a1a] dark:border-[#343536]">
           <CardContent className="p-4 text-center text-muted-foreground">
             No comments yet. Be the first to share your thoughts!
           </CardContent>
         </Card>
       ) : (
-        <div className="comments-list">
+        <div className="comments-list w-full">
           {comments.map((comment) => (
             <Comment key={comment._id} comment={comment} />
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 };
 
@@ -315,8 +355,8 @@ const PostCard = ({
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="max-w-2xl w-full mx-auto dark:bg-[#1a1a1a] dark:border-[#343536]">
+    <div className="space y-4 w-full">
+      <Card className="w-full dark:bg-[#1a1a1a] dark:border-[#343536]">
         <CardHeader className="flex flex-row items-start gap-4 p-4">
           {/* Vote buttons column */}
           <VoteButtons
@@ -328,10 +368,10 @@ const PostCard = ({
           />
 
           {/* Main content */}
-          <div className="grid gap-1">
+          <div className="grid gap-1 w-full">
             <PostHeader
               author={post.author}
-              subreddit={post.subreddit ?? { name: "deleted" }}
+              subreddit={post.subreddit}
               showSubreddit={showSubreddit}
               creationTime={post._creationTime}
             />
@@ -354,7 +394,7 @@ const PostCard = ({
               onClick={handleComment}
             >
               <MessageSquare className="h-4 w-4" />
-              <span className="text-xs">{commentCount ?? 0} comment(s)</span>
+              <span className="text-xs">{commentCount ?? 0} comments</span>
             </Button>
             <Button
               variant="ghost"
@@ -367,7 +407,9 @@ const PostCard = ({
             <Button
               variant="ghost"
               size="sm"
-              className={`h-8 gap-1 ${saved ? "text-purple-500" : "text-muted-foreground"}`}
+              className={`h-8 gap-1 ${
+                saved ? "text-purple-500" : "text-muted-foreground"
+              }`}
               onClick={() => setSaved(!saved)}
             >
               <Bookmark className="h-4 w-4" />
@@ -379,6 +421,7 @@ const PostCard = ({
                 variant="ghost"
                 size="sm"
                 className="h-8 gap-1 text-red-500"
+                onClick={handleDelete}
               >
                 <Trash2 className="h-4 w-4" />
                 <span className="text-xs">Delete</span>
@@ -390,12 +433,14 @@ const PostCard = ({
 
       {/* Comment sections - only show when in expanded view */}
       {(showComments || expandedView) && (
-        <CommentSection
-          postId={post._id}
-          comments={comments ?? []}
-          onSubmit={handleSubmitComment}
-          signedIn={!!user}
-        />
+        <div className="mt-4 space-y-4">
+          <CommentSection
+            postId={post._id}
+            comments={comments ?? []}
+            onSubmit={handleSubmitComment}
+            signedIn={!!user}
+          />
+        </div>
       )}
     </div>
   );
