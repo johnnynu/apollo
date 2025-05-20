@@ -7,7 +7,6 @@ import { Rocket, Flame, ArrowUpDown, Clock } from "lucide-react";
 
 export function PostFeed() {
   const topPosts = useQuery(api.feed.getTopPosts, { limit: 10 });
-  console.log(topPosts);
 
   if (!topPosts) {
     return (

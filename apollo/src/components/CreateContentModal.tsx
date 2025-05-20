@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ModalSearchBar from "./ModalSearchBar";
 import { Image, Link, FileText, MessageSquare, ImageIcon } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -98,7 +99,9 @@ export function CreateContentModal({
   };
 
   const { subredditName } = useParams();
-  const subreddit = useQuery(api.subreddit.get, { name: subredditName || "" });
+  const subreddit = useQuery(api.subreddit.get, {
+    name: subredditName || formData.community || "",
+  });
 
   const updateFormData = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -118,7 +121,7 @@ export function CreateContentModal({
     e.preventDefault();
     const { title, content, imageFile } = formData;
 
-    if (!title.trim() || !subreddit) {
+    if (!title.trim() || !subreddit || !formData.community) {
       alert("Please enter a title and select a subreddit.");
       return;
     }
@@ -151,7 +154,7 @@ export function CreateContentModal({
         });
 
         handleClose();
-        navigate(`/r/${subredditName}`);
+        navigate(`/r/${subredditName ?? formData.community}`);
       }
     } catch (err) {
       console.log(err);
@@ -295,30 +298,13 @@ export function CreateContentModal({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="community">Community</Label>
-                <Select
-                  disabled={isLoading}
-                  onValueChange={(value) => updateFormData("community", value)}
-                >
-                  <SelectTrigger
-                    id="community"
-                    className="dark:bg-[#272729] dark:border-[#343536]"
-                  >
-                    <SelectValue
-                      placeholder={
-                        formData.community
-                          ? `r/${formData.community}`
-                          : "Choose a community"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="dark:bg-[#1a1a1a] dark:border-[#343536]">
-                    <SelectItem value="programming">r/programming</SelectItem>
-                    <SelectItem value="webdev">r/webdev</SelectItem>
-                    <SelectItem value="reactjs">r/reactjs</SelectItem>
-                    <SelectItem value="nextjs">r/nextjs</SelectItem>
-                    <SelectItem value="tailwindcss">r/tailwindcss</SelectItem>
-                  </SelectContent>
-                </Select>
+                <ModalSearchBar
+                  defaultValue={formData.community}
+                  onSelectCommunity={(name) => {
+                    updateFormData("community", name);
+                  }}
+                  disabled={!!subredditName}
+                />
               </div>
               {/* Create Post Tab Inputs */}
               <div className="space-y-2">
