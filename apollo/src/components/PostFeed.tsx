@@ -61,13 +61,6 @@ export function PostFeed() {
                 <Rocket className="h-4 w-4 mr-2" />
                 Top
               </TabsTrigger>
-              <TabsTrigger
-                value="rising"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#7950F2] rounded-none px-4 py-2"
-              >
-                <ArrowUpDown className="h-4 w-4 mr-2" />
-                Rising
-              </TabsTrigger>
             </TabsList>
           </Tabs>
         </CardContent>
