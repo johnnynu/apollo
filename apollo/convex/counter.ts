@@ -13,3 +13,7 @@ export function commentCountKey(postId: Id<"post">) {
 export function postCountKey(userId: Id<"users">) {
   return `post:${userId}`;
 }
+
+export function subredditPostCountKey(subredditId: Id<"subreddit">) {
+  return `subreddit:${subredditId}`;
+}

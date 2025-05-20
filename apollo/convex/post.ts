@@ -2,7 +2,7 @@ import { mutation, query, QueryCtx } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 import { v, ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
-import { counter, postCountKey } from "./counter";
+import { counter, postCountKey, subredditPostCountKey } from "./counter";
 
 type EnrichedPost = Omit<Doc<"post">, "subreddit"> & {
   author: { username: string } | undefined;
@@ -41,6 +41,7 @@ export const create = mutation({
     });
 
     await counter.inc(ctx, postCountKey(user._id));
+    await counter.inc(ctx, subredditPostCountKey(args.subreddit));
 
     return postId;
   },
@@ -119,6 +120,7 @@ export const deletePost = mutation({
 
     await ctx.db.delete(args.postId);
     await counter.dec(ctx, postCountKey(user._id));
+    await counter.dec(ctx, subredditPostCountKey(post.subreddit));
   },
 });
 

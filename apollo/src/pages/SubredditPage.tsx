@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Bell } from "lucide-react";
 import PostCard from "@/components/PostCard";
-import { CreateContentModal } from "@/components/CreateContentModal";
 
 // subreddit variable should contain:
 // name
@@ -73,6 +72,7 @@ const SubredditPage = () => {
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
+                    disabled={true}
                   >
                     <Bell className="h-4 w-4" />
                     Join
@@ -106,22 +106,21 @@ const SubredditPage = () => {
                 <p className="text-sm mb-4">{subreddit.description}</p>
                 <div className="flex items-center gap-2 text-sm mb-4">
                   <div>
-                    <div className="font-bold">1.2k</div>
+                    <div className="font-bold"></div>
                     <div className="text-xs text-muted-foreground">Members</div>
                   </div>
                   <div className="h-8 w-px bg-border"></div>
                   <div>
-                    <div className="font-bold">42</div>
+                    <div className="font-bold"></div>
                     <div className="text-xs text-muted-foreground">Online</div>
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Created Jan 1, 2023
+                  Created{" "}
+                  {new Date(subreddit._creationTime).toLocaleDateString()}
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button className="w-full">Create Post</Button>
-              </CardFooter>
+              <CardFooter className="p-4 pt-0"></CardFooter>
             </Card>
 
             <Card>

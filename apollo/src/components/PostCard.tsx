@@ -157,6 +157,7 @@ const PostContent = ({
   postId,
 }: PostContentProps) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
   return (
     <>
       {expandedView ? (

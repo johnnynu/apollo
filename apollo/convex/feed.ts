@@ -1,6 +1,6 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
-import { counter } from "./counter";
+import { counter, subredditPostCountKey } from "./counter";
 import { voteKey } from "./vote";
 
 export const getTopPosts = query({
@@ -26,11 +26,13 @@ export const getTopPosts = query({
 
         const author = await ctx.db.get(post.authorId);
         const subreddit = await ctx.db.get(post.subreddit);
+        const image = post.image && (await ctx.storage.getUrl(post.image));
 
         return {
           ...post,
           score: upvotes - downvotes,
           upvotes,
+          imageUrl: image ?? undefined,
           downvotes,
           author: { username: author?.username ?? "[deleted]" },
           subreddit: { name: subreddit?.name ?? "[deleted]" },
@@ -39,5 +41,31 @@ export const getTopPosts = query({
     );
 
     return postWithScores.sort((a, b) => b.score - a.score).slice(0, limit);
+  },
+});
+
+export const topSubreddits = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const subreddits = ctx.db.query("subreddit").collect();
+
+    const topSubredditsByPosts = await Promise.all(
+      (await subreddits).map(async (subreddit) => {
+        const postCount = await counter.count(
+          ctx,
+          subredditPostCountKey(subreddit._id)
+        );
+        return {
+          ...subreddit,
+          postCount,
+        };
+      })
+    );
+
+    const sorted = topSubredditsByPosts.sort(
+      (a, b) => (b.postCount ?? 0) - (a.postCount ?? 0)
+    );
+
+    return sorted.slice(0, args.limit ?? 5);
   },
 });

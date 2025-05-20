@@ -1,4 +1,3 @@
-import { Header } from "@/components/Header";
 import { Banner } from "@/components/Banner";
 import { PostFeed } from "@/components/PostFeed";
 import { Sidebar } from "@/components/Sidebar";

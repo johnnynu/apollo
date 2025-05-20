@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { getCurrentUserOrThrow } from "./users";
 import { v, ConvexError } from "convex/values";
 import { getEnrichedPosts } from "./post";
+import { counter, subredditPostCountKey } from "./counter";
 
 export const create = mutation({
   args: {

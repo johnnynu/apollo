@@ -4,14 +4,17 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChevronUp, Home, Plus, Rocket, TrendingUp, Users } from "lucide-react";
+import { ChevronUp, Home, Rocket, TrendingUp } from "lucide-react";
+import { api } from "../../convex/_generated/api";
+import { useQuery } from "convex/react";
 
 export function Sidebar() {
+  const topSubreddits = useQuery(api.feed.topSubreddits, { limit: 5 });
+
   return (
     <div className="space-y-4">
       <Card className="dark:bg-[#1a1a1a] dark:border-[#343536]">
@@ -64,108 +67,32 @@ export function Sidebar() {
           <CardTitle>Top Communities</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-2">
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground text-sm">1</div>
-            <ChevronUp className="h-4 w-4 text-purple-500" />
-            <Avatar className="h-6 w-6">
-              <AvatarImage
-                src="/placeholder.svg?height=24&width=24"
-                alt="r/programming"
-              />
-              <AvatarFallback>P</AvatarFallback>
-            </Avatar>
-            <Link to="#" className="text-sm font-medium hover:underline">
-              r/programming
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground text-sm">2</div>
-            <ChevronUp className="h-4 w-4 text-purple-500" />
-            <Avatar className="h-6 w-6">
-              <AvatarImage
-                src="/placeholder.svg?height=24&width=24"
-                alt="r/webdev"
-              />
-              <AvatarFallback>W</AvatarFallback>
-            </Avatar>
-            <Link to="#" className="text-sm font-medium hover:underline">
-              r/webdev
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground text-sm">3</div>
-            <ChevronUp className="h-4 w-4 text-purple-500" />
-            <Avatar className="h-6 w-6">
-              <AvatarImage
-                src="/placeholder.svg?height=24&width=24"
-                alt="r/reactjs"
-              />
-              <AvatarFallback>R</AvatarFallback>
-            </Avatar>
-            <Link to="#" className="text-sm font-medium hover:underline">
-              r/reactjs
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground text-sm">4</div>
-            <ChevronUp className="h-4 w-4 text-purple-500" />
-            <Avatar className="h-6 w-6">
-              <AvatarImage
-                src="/placeholder.svg?height=24&width=24"
-                alt="r/nextjs"
-              />
-              <AvatarFallback>N</AvatarFallback>
-            </Avatar>
-            <Link to="#" className="text-sm font-medium hover:underline">
-              r/nextjs
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-muted-foreground text-sm">5</div>
-            <ChevronUp className="h-4 w-4 text-purple-500" />
-            <Avatar className="h-6 w-6">
-              <AvatarImage
-                src="/placeholder.svg?height=24&width=24"
-                alt="r/tailwindcss"
-              />
-              <AvatarFallback>T</AvatarFallback>
-            </Avatar>
-            <Link to="#" className="text-sm font-medium hover:underline">
-              r/tailwindcss
-            </Link>
-          </div>
+          {topSubreddits?.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No communities yet</p>
+          ) : (
+            topSubreddits?.map((subreddit, index) => (
+              <div className="flex items-center gap-2" key={subreddit._id}>
+                <div className="text-muted-foreground text-sm">{index + 1}</div>
+                <ChevronUp className="h-4 w-4 text-purple-500" />
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src="/placeholder.svg?height=24&width=24" />
+                  <AvatarFallback>
+                    {subreddit.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <Link
+                  to={`r/${subreddit.name}`}
+                  className="text-sm font-medium hover:underline"
+                >
+                  r/{subreddit.name}
+                </Link>
+              </div>
+            ))
+          )}
         </CardContent>
         <CardFooter>
           <Button className="w-full" variant="outline">
             View All
-          </Button>
-        </CardFooter>
-      </Card>
-
-      <Card className="dark:bg-[#1a1a1a] dark:border-[#343536]">
-        <CardHeader>
-          <CardTitle>Create Post</CardTitle>
-          <CardDescription>
-            Share your thoughts with the community
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Button className="w-full bg-purple-600 hover:bg-purple-700">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Post
-          </Button>
-        </CardFooter>
-      </Card>
-
-      <Card className="dark:bg-[#1a1a1a] dark:border-[#343536]">
-        <CardHeader>
-          <CardTitle>Create Community</CardTitle>
-          <CardDescription>Start your own subreddit</CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Button className="w-full" variant="outline">
-            <Users className="mr-2 h-4 w-4" />
-            Create Community
           </Button>
         </CardFooter>
       </Card>
