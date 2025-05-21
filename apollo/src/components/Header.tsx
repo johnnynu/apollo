@@ -56,9 +56,11 @@ export function Header() {
         </Link>
 
         <div className="hidden md:flex items-center gap-4 mr-4">
-          <Button variant="ghost" size="sm" className="text-sm">
-            Home
-          </Button>
+          <Link to="/">
+            <Button variant="ghost" size="sm" className="text-sm">
+              Home
+            </Button>
+          </Link>
         </div>
 
         {/* Search Bar */}
