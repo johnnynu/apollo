@@ -2,7 +2,7 @@
 
 Apollo is a modern, space-themed community platform inspired by Reddit, built with React, TypeScript, TailwindCSS, and Convex as the backend.
 
-![Apollo Logo](/public/apollo-transparent-logo.png)
+![Apollo Logo](/apollo/public/apollo-transparent-logo.png)
 
 ## Features
 
